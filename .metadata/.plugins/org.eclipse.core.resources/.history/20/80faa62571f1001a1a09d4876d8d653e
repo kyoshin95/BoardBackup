@@ -1,0 +1,10 @@
+package com.koreait.matzip;
+
+public class SecurityUtils 
+{
+	public static String generateSalt()
+	{
+		
+	}
+
+}

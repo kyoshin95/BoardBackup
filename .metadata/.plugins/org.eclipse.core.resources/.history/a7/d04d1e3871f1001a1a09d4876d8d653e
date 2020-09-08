@@ -1,0 +1,15 @@
+package com.koreait.matzip;
+
+import java.util.Random;
+
+public class SecurityUtils 
+{
+	public static String generateSalt()
+	{
+		Random random = new Random();
+		
+		byte[] salt = new byte[8];
+		random.nextBytes(salt);
+	}
+
+}

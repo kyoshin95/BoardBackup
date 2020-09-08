@@ -1,0 +1,350 @@
+package com.koreait.pjt.db;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.koreait.pjt.vo.BoardDomain;
+import com.koreait.pjt.vo.BoardVO;
+import com.koreait.pjt.vo.UserLoginHistory;
+import com.koreait.pjt.vo.UserVO;
+
+public class BoardDAO 
+{
+	public static List<BoardDomain> selBoardList(BoardDomain param) 
+	{
+		List<BoardDomain> list = new ArrayList();
+		/*
+		String sql = " SELECT A.i_board, A.title, A.hits, A.i_user, A.r_dt, B.nm "
+				+ " FROM t_board4 A INNER JOIN t_user B ON A.i_user = B.i_user "
+				+ " ORDER BY i_board DESC ";
+		*/
+		String sql = " SELECT A.* FROM ( "
+				+ " SELECT ROWNUM as RNUM, A.* FROM ( "
+				+ " 		SELECT A.i_board, A.title, A.hits, A.i_user, A.r_dt, B.nm, B.profile_img "
+				+ "         , nvl(C.cnt, 0) as like_count "
+				+ "			, nvl(D.cnt, 0) as cnt_count "
+				+ "			, DECODE(E.i_board, null, 0, 1) as yn_like "
+				+ " 		FROM t_board4 A "
+				+ " 		INNER JOIN t_user B "
+				+ " 		ON A.i_user = B.i_user"
+				+ "			LEFT JOIN ( "  
+				+ "    			SELECT i_board, count(i_board) as cnt FROM t_board4_like GROUP BY i_board " 
+				+ "			) C "  
+				+ "			ON A.i_board = C.i_board "
+				+ "			LEFT JOIN ( "
+				+ "				SELECT i_board, count(i_board) as cnt FROM t_board4_cmt GROUP BY i_board "
+				+ "			) D "
+				+ "			ON A.i_board = D.i_board "
+				+ "			LEFT JOIN ( "
+				+ "				 SELECT i_board FROM t_board4_like WHERE i_user = ? "
+				+ "			) E "
+				+ "			ON A.i_board = E.i_board "
+				+ " 		WHERE  ";
+				switch(param.getSearchType()) {
+				case "a":					
+					sql += " A.title like ? ";
+					break;
+				case "b":
+					sql += " A.cont like ? ";
+					break;
+				case "c":
+					sql += " (A.cont like ? or A.title like ?) ";
+					break;
+				}
+		
+				sql += " 		ORDER BY i_board DESC "
+				+ " 	) A WHERE ROWNUM <= ? "
+				+ " ) A WHERE A.RNUM > ? ";
+		
+		int result = JdbcTemplate.executeQuery(sql, new JdbcSelectInterface() {
+
+			@Override
+			public void prepared(PreparedStatement ps) throws SQLException 
+			{
+				int seq = 1;
+				ps.setInt(seq, param.getI_user()); //로그인한 사람의 i_user
+				ps.setNString(++seq, param.getSearchText());
+				
+				if(param.getSearchType().equals("c")) 
+				{
+					ps.setNString(++seq, param.getSearchText());	
+				}
+				
+				ps.setInt(++seq, param.geteIdx());
+				ps.setInt(++seq, param.getsIdx());
+			}
+
+			@Override
+			public int executeQuery(ResultSet rs) throws SQLException 
+			{
+				while(rs.next()) {
+					int i_board = rs.getInt("i_board");	
+					String title = rs.getNString("title");
+					int hits = rs.getInt("hits");
+					int i_user = rs.getInt("i_user");
+					String r_dt = rs.getNString("r_dt");
+					String nm = rs.getNString("nm");
+					String profile_img = rs.getNString("profile_img");
+					int cnt_count = rs.getInt("cnt_count");
+					int like_count = rs.getInt("like_count");
+					int yn_like = rs.getInt("yn_like");
+					
+					BoardDomain vo = new BoardDomain();
+					vo.setI_board(i_board);
+					vo.setTitle(title);
+					vo.setHits(hits);
+					vo.setI_user(i_user);
+					vo.setR_dt(r_dt);
+					vo.setNm(nm);
+					vo.setCnt_count(cnt_count);
+					vo.setLike_count(like_count);
+					vo.setProfile_img(profile_img);
+					vo.setYn_like(yn_like);
+					
+					list.add(vo);
+				}
+				return 1;
+			}			
+		});
+		
+		return list;
+	}
+
+	
+	public static List<BoardDomain> selBoardLikeList(final int i_board)
+	{
+		List<BoardDomain> list = new ArrayList();
+		
+		String sql = " select B.i_user, B.nm, B.profile_img from t_board4_like A "
+				+ " inner join t_user B on A.i_user = B.i_user where A.i_board = ? "
+				+ " order by A.r_dt asc ";
+		
+		JdbcTemplate.executeQuery(sql, new JdbcSelectInterface() 
+		{
+
+			@Override
+			public void prepared(PreparedStatement ps) throws SQLException 
+			{
+				ps.setInt(1, param.getI_user());
+				ps.setInt(2,  param.getI_board());
+			}
+
+			@Override
+			public int executeQuery(ResultSet rs) throws SQLException 
+			{
+				if(rs.next()) 
+				{
+					result.setI_user(rs.getInt("i_user"));
+					result.setNm(rs.getNString("nm"));
+					result.setTitle(rs.getNString("title"));
+					result.setCont(rs.getNString("cont"));
+					result.setHits(rs.getInt("hits"));
+					result.setR_dt(rs.getNString("r_dt"));
+					result.setYn_like(rs.getInt("yn_like"));
+					result.setProfile_img(rs.getNString("profile_img"));
+				}
+				return 1;
+			}
+		});
+		
+		return result;
+	}
+	
+	public static int insBoardList(BoardVO param) // 리스트 삽입
+	{	
+		String sql = " INSERT INTO t_board4(i_board, title, cont, i_user) SELECT seq_list.nextval, ?, ?, ? FROM DUAL ";
+		
+		return JdbcTemplate.executeUpdate(sql, new JdbcUpdateInterface()
+		{
+			public void update(PreparedStatement ps) throws SQLException
+			{
+				ps.setNString(1, param.getTitle());
+				ps.setNString(2, param.getCont());
+				ps.setInt(3, param.getI_user());
+			}
+		});
+	}
+
+	public static BoardDomain selBoard(final BoardVO param) 
+	{
+		BoardDomain result = new BoardDomain();
+		result.setI_board(param.getI_board());
+		
+		String sql = " SELECT B.nm, B.profile_img, A.i_user "
+				+ " , A.title, A.cont, A.hits, TO_CHAR(A.r_dt, 'YYYY/MM/DD HH24:MI') as r_dt, "
+				+ " DECODE(C.i_user, null, 0, 1) as yn_like "
+				+ " FROM t_board4 A "
+				+ " INNER JOIN t_user B "
+				+ " ON A.i_user = B.i_user "
+				+ " LEFT JOIN t_board4_like C "
+				+ " ON A.i_board = C.i_board "
+				+ " AND C.i_user = ? "
+				+ " WHERE A.i_board = ? ";
+		
+		JdbcTemplate.executeQuery(sql, new JdbcSelectInterface() 
+		{
+
+			@Override
+			public void prepared(PreparedStatement ps) throws SQLException 
+			{
+				ps.setInt(1, param.getI_user());
+				ps.setInt(2,  param.getI_board());
+			}
+
+			@Override
+			public int executeQuery(ResultSet rs) throws SQLException 
+			{
+				if(rs.next()) 
+				{
+					result.setI_user(rs.getInt("i_user"));
+					result.setNm(rs.getNString("nm"));
+					result.setTitle(rs.getNString("title"));
+					result.setCont(rs.getNString("cont"));
+					result.setHits(rs.getInt("hits"));
+					result.setR_dt(rs.getNString("r_dt"));
+					result.setYn_like(rs.getInt("yn_like"));
+					result.setProfile_img(rs.getNString("profile_img"));
+				}
+				return 1;
+			}
+		});
+		
+		return result;
+	}
+	
+	public static int delBoard(final int i_board) 
+	{
+		BoardDomain result = new BoardDomain();
+		result.setI_board(i_board);
+		
+		String sql = " DELETE FROM t_board4 WHERE i_board = ? ";
+		
+		return JdbcTemplate.executeUpdate(sql, new JdbcUpdateInterface() 
+		{	
+			@Override
+			public void update(PreparedStatement ps) throws SQLException 
+			{
+				ps.setInt(1, i_board);
+			}
+		});
+	}
+	
+	public static int modBoard(BoardVO vo) 
+	{
+		BoardDomain result = new BoardDomain();
+		
+		String sql = " update t_board4 set title = ?, cont = ?, m_dt = sysdate where i_board = ? ";
+		
+		return JdbcTemplate.executeUpdate(sql, new JdbcUpdateInterface() 
+		{	
+			@Override
+			public void update(PreparedStatement ps) throws SQLException 
+			{
+				ps.setNString(1, vo.getTitle());
+				ps.setNString(2, vo.getCont());
+				ps.setInt(3, vo.getI_board());
+			}
+		});
+	}
+	
+	public static int addHits(final int i_board)
+	{
+		BoardDomain result = new BoardDomain();
+		result.setI_board(i_board);
+		
+		String sql = " update t_board4 set hits = hits + 1 where i_board = ? ";
+		
+		return JdbcTemplate.executeUpdate(sql, new JdbcUpdateInterface() 
+		{	
+			@Override
+			public void update(PreparedStatement ps) throws SQLException 
+			{
+				ps.setInt(1, i_board);
+			}
+		});
+		
+	}
+	
+	public static int selPagingCnt(final BoardDomain param) 
+	{
+		String sql = " SELECT CEIL(COUNT(i_board) / ?) FROM t_board4 where ";
+		
+		switch(param.getSearchType())
+		{
+			case "a" : sql += " title like ? "; break;
+			case "b" : sql += " cont like ? "; break;
+			case "c" : sql += " (cont like ? or title like ?) "; break;
+		}
+		
+		return JdbcTemplate.executeQuery(sql, new JdbcSelectInterface() 
+		{
+			@Override
+			public void prepared(PreparedStatement ps) throws SQLException 
+			{
+				ps.setInt(1, param.getRecord_cnt());
+				ps.setNString(2, param.getSearchText());
+				if(param.getSearchType().equals("c"))
+				{
+					ps.setNString(3, param.getSearchText());
+				}
+			}
+
+			@Override
+			public int executeQuery(ResultSet rs) throws SQLException 
+			{
+				if(rs.next()) 
+				{
+					return rs.getInt(1);
+				}
+				return 0;
+			}
+
+		});
+	}
+
+	public static int insUserLoginHistory(UserLoginHistory param)
+	{
+		String sql = " INSERT INTO t_user_loginhistory(i_history, i_user, os, ip_addr, browser) values(seq_userloginhistory.nextval, ?, ?, ?) ";
+		
+		return JdbcTemplate.executeUpdate(sql, new JdbcUpdateInterface()
+		{
+			public void update(PreparedStatement ps) throws SQLException
+			{
+				ps.setInt(1, param.getI_user());
+				ps.setNString(2, param.getOs());
+				ps.setNString(3, param.getIp_addr());
+				ps.setNString(4, param.getBrowser());
+			}
+		});
+	}
+	
+	public static void insLike(BoardDomain param)
+	{
+		String sql = " INSERT INTO t_board4_like(i_board, i_user) values(?, ?) ";
+		
+		JdbcTemplate.executeUpdate(sql, new JdbcUpdateInterface()
+		{
+			public void update(PreparedStatement ps) throws SQLException
+			{
+				ps.setInt(1, param.getI_board());
+				ps.setInt(2, param.getI_user());
+			}
+		});
+	}
+	
+	public static void delLike(BoardDomain param)
+	{
+		String sql = " DELETE FROM t_board4_like where i_board = ? ";
+		
+		JdbcTemplate.executeUpdate(sql, new JdbcUpdateInterface()
+		{
+			public void update(PreparedStatement ps) throws SQLException
+			{
+				ps.setInt(1, param.getI_board());
+			}
+		});
+	}
+}

@@ -1,0 +1,44 @@
+package com.koreait.matzip.db;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+public class DbManager 
+{
+
+	public static Connection getCon() throws Exception
+	{
+		String url = "jdbc:mysql://127.0.0.1:3306/matzip";
+		String user = "root"; // userid로 root사용 금물.
+		String pw = "koreait2020";
+		String className = "com.mysql.cj.jdbc.Driver"; // cj폴더 안에도 jdbc폴더가 있다.
+		
+		Class.forName(className);
+		Connection con = DriverManager.getConnection(url, user, pw);
+		System.out.println("DB Connection Success");
+		return con;
+	}
+	
+	public static void close(Connection con, PreparedStatement ps, ResultSet rs)
+	{
+		if(rs != null)
+		{
+			try {rs.close();}catch(Exception e){}
+		}
+		if(ps != null)
+		{
+			try {ps.close();}catch(Exception e){}
+		}
+		if(con != null)
+		{
+			try {con.close();}catch(Exception e){}
+		}
+	}
+	
+	public static void close(Connection con, PreparedStatement ps)
+	{	
+		close(con, ps, null);
+	}
+}

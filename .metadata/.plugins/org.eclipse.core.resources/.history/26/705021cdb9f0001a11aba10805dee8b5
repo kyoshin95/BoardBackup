@@ -1,0 +1,17 @@
+package com.koreait.mapzip.user;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.koreait.matzip.Const;
+import com.koreait.matzip.Template;
+
+public class UserController 
+{
+	public String login(HttpServletRequest request) 
+	{
+		request.setAttribute("title", "로그인");
+		request.setAttribute(Const.VIEW, "user/login");
+		return Template.DEFAULT;
+	}
+}

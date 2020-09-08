@@ -1,0 +1,17 @@
+package com.koreait.matzip;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class HandlerMapping 
+{
+	public String nav(HttpServletRequest request)
+	{
+		String[] uriArr = request.getRequestURI().split("/");
+		
+		if(uriArr.length < 2)
+		{
+			return null;
+		}
+		return null;
+	}
+}

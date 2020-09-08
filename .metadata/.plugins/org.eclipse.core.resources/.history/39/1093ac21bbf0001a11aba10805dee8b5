@@ -1,0 +1,26 @@
+package com.koreait.matzip;
+
+import javax.servlet.http.HttpServletRequest;
+
+import com.koreait.mapzip.user.UserController;
+
+public class HandlerMapper 
+{
+	private UserController user;
+	
+	public HandlerMapper()
+	{
+		
+	}
+	
+	public String nav(HttpServletRequest request)
+	{
+		String[] uriArr = request.getRequestURI().split("/");
+		
+		if(uriArr.length < 2)
+		{
+			return null;
+		}
+		return null;
+	}
+}

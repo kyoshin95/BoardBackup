@@ -1,0 +1,14 @@
+package com.koreait.matzip.user;
+
+import com.koreait.matzip.vo.UserVO;
+
+public class UserService // 로직담당
+{
+	public int join(UserVO param)
+	{
+		String pw = param.getUser_pw();
+		String 
+		
+		return 1;
+	}
+}

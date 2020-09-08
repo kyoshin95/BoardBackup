@@ -1,0 +1,27 @@
+package com.koreait.matzip.db;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import com.koreait.matzip.vo.UserVO;
+
+public class UserDAO 
+{
+	public int Join(UserVO param)
+	{
+		int result = 0;
+		
+		String sql = " insert into t_user(user_id, user_pw, nm, salt) values(?, ?, ?, ?) ";
+
+		return JdbcTemplate.executeUpdate(sql, new JdbcUpdateInterface()
+		{
+			public void update(PreparedStatement ps) throws SQLException
+			{
+				ps.setNString(1, param.getUser_id());
+				ps.setNString(2, param.getUser_pw());
+				ps.setNString(3, param.getNm());
+				ps.setNString(4, param.getSalt());
+			}
+		});
+	}
+}

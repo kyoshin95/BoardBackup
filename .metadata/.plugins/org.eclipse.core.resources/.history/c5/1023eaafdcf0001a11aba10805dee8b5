@@ -1,0 +1,9 @@
+package com.koreait.matzip.db;
+
+public class DbManager 
+{
+	public static Connection getCon() throws Exception
+	{
+		
+	}
+}

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete resource &apos;MatZip&apos;" deleteContents="true" description="Delete resource &apos;MatZip&apos;" element1="/MatZip" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1599442016626"/>
+</session>

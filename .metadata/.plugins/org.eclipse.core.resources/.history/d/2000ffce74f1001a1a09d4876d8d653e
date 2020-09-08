@@ -1,0 +1,16 @@
+package com.koreait.matzip.db;
+
+import com.koreait.matzip.vo.UserVO;
+
+public class UserDAO 
+{
+	public int Join(UserVO param)
+	{
+		int result = 0;
+		
+		String sql = " insert into  "
+		
+		return result;
+	}
+
+}

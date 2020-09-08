@@ -1,0 +1,304 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>상세페이지</title>
+<style>
+	body{background: #2B3032; font-family:나눔고딕;}
+	#right {display: flex; justify-content:flex-end; margin-top:50px; margin-bottom: 50px;}
+	#container{ width:1000px; height: 100%; margin: 0 auto; }
+	#cont_txt { padding: 10px; height: 400px; vertical-align: top;}
+	table { border-collapse : collapse;font-size: 12px;  width: 100%; margin: 0 auto; border: none; background: #dfdfdf}
+	table tr { border: 1px solid #4e4e4e; background: gray; border: none;}
+	table th { border: 1px solid #4e4e4e; background: #9e9e9e;  height: 40px;  font-weight: bold; background: #33393B; color: #ffffff}
+	table td { border: 1px solid #4e4e4e; height: 40px; width: 150px; ; color: #ffffff; background: #232729;}
+	form { display: inline; }
+	h2 { text-align: center; color : #dfdfdf; margin-top: 40px; margin-bottom: 40px;}
+	a {  text-decoration: none;  color: #dedede; font-weight: bold;}
+	.mar_l {margin: 0px 10px;}
+	.s_td { width: 60px;}
+	.l_td { padding-left: 10px; width: 600px;}
+	.m_td { padding-left: 10px;}
+	.sub_l_td { width: 600px;}
+	.sub_btn { border: none; background: #2B3032; color: white;}
+	#g_td { width: 230px;}
+	#g_td small { margin-left : 10px;}
+	#like {cursor: pointer;}
+	#sub_table { text-align: center;}
+	.sub_input { margin-top: 20px; padding-left: 10px; color: white; width: 880px; height: 40px;  border: 1px solid #4e4e4e; background: #2B3032;}
+	.sub_submit { width: 100px; height: 40px; border: 1px solid #4e4e4e; margin: 0px; padding: 0px;background: #2B3032; color: white;}
+	.pro_img {
+		width: 30px; height: 30px; border-radius: 30px;
+	}
+	 .pointerCursor { cursor: pointer; }
+	 #likeListContainer {
+			opacity: 0;
+			border: 1px solid #bdc3c7;
+			position: absolute;
+			left: 0px;
+			top: 30px;
+			width: 100px;
+			height: 200px;
+			overflow-y: auto;
+			background-color: white;
+			
+		}		
+		#id_like { 
+			position:relative;
+			font-size: 1em;
+		 }		
+		
+		#id_like:hover #likeListContainer {
+			opacity: 1;
+			transition-duration : 500ms;
+		}
+		
+		#id_like:not(:hover) #likeListContainer {
+			opacity: 0;
+			transition-duration : 500ms;
+		}
+		
+		.profile {
+			margin: 5px;
+			background-color: white !important;
+			width: 25px;
+			height: 25px;
+		    border-radius: 50%;
+		    overflow: hidden;
+		}		
+		
+		.likeItemContainer {
+			display: flex;
+		}
+		
+		.likeItemContainer .nm {
+			background-color: white !important;
+			margin-left: 7px;
+			font-size: 0.7em;
+			display: flex;
+			align-items: center;
+			color: black;
+		}
+</style>
+</head>
+<body class="preload">
+	<div id="container">
+		<div id="right">
+			<a href="/board/list?page=${param.page}&record_cnt=${param.record_cnt}&searchText=${param.searchText}&searchType=${param.searchType}" class="mar_l">뒤로가기</a>
+			<c:if test="${loginUser.i_user == data.i_user}">
+				<a href="/board/regmod?i_board=${data.i_board}" class="mar_l">수정</a>
+				<form id="delFrm" action="/board/del" method="post">
+					<input type="hidden" name="i_board" value="${data.i_board}">
+					<a href="#" class="mar_l" onclick="submitDel()">삭제</a>
+				</form>
+			</c:if>
+		</div>
+		<div>
+			<h2>게시글</h2>
+		</div>
+		<table>
+			<tr>
+				<th class="s_td" id="elTitle">
+					제목
+				</th>
+				<td class="l_td">
+					${data.title}
+				</td>
+				<th class="s_td">
+					작성자
+				</th>
+				<td class="m_td" id="elCont">
+					<c:choose>
+						<c:when test="${data.profile_img != null}" >
+							<img class="pro_img" src="/img/user/${data.i_user }/${data.profile_img}" >
+						</c:when>
+						<c:otherwise>
+							<img class="pro_img" src="/img/default_profile.jpg">
+						</c:otherwise>
+					</c:choose>
+					${data.nm }
+				</td>
+				<th class="s_td">
+					날짜
+				</th>
+				<td class="m_td" id="g_td">
+					${data.r_dt}<small>${data == null ? '' : '수정' }</small>
+				</td>
+				<th class="s_td">
+					조회수
+				</th>
+				<td class="m_td">
+					${data.hits}
+				</td>	
+				<th class="s_td">
+					좋아요
+				</th>	
+				<td class="m_td" id="like" onclick="toggleLike(${data.yn_like})">
+					<c:if test ="${data.yn_like == 0}">
+						♡
+					</c:if>
+					<c:if test ="${data.yn_like == 1}">
+						♥
+					</c:if>
+				</td>
+			</tr>
+			<c:if test="${data.like_count > 0}">
+            	<tr>
+            		<td colspan="10" class="m_td">
+            			<span id="id_like" class="pointerCursor">좋아요 ${data.like_count}개
+	            			<div id="likeListContainer">
+	            				<c:forEach items="${likeList}" var="item">
+	            					<div class="likeItemContainer">
+	            						<div class="profileContainer">
+	            							<div class="profile">
+		            							<c:choose>
+		            								<c:when test="${item.profile_img == null}">
+		            									<img class="pImg" src="/img/default_profile.jpg">
+		            								</c:when>
+		            								<c:otherwise>
+		            									<img class="pImg" src="/img/user/${item.i_user}/${item.profile_img}">
+		            								</c:otherwise>
+		            							</c:choose>
+	            							</div>
+	            						</div>
+	            						<div class="nm">${item.nm}</div>
+	            					</div>
+	            				</c:forEach>
+		   	 				</div>
+            			</span>
+            		</td>
+            	</tr>
+            </c:if>
+			<tr>
+				<th colspan="10">내용</td>
+			</tr>
+			<tr>
+				<td id="cont_txt" colspan="10">${data.cont}</td>
+			</tr>
+		</table>
+		<div>
+			<form id="cmtFrm" action="/board/cmt" method="post">
+				<input type="hidden" name="i_cmt" value="0">
+				<input type="hidden" name="i_board" value="${data.i_board}">
+				<div>
+					<input class="sub_input" type="text" name="cmt" placeholder="댓글내용">
+					<input type="submit" id="cmtSubmit" value="전송">
+        			<input type="button" value="취소" onclick="clkCmtCancel()">
+				</div>
+			</form>
+		</div>
+		<div>
+			<table id="sub_table">
+				<tr>
+					<th>내용</th>
+					<th>작성자</th>
+					<th>등록일</th>
+					<th>비고</th>
+				</tr>
+				<c:forEach items="${cmtList}" var="item">
+					<tr class="pnt">
+						<td class="sub_l_td">${item.cmt}</td>
+						<td>
+							<c:choose>
+								<c:when test="${item.profile_img != null}" >
+									<img class="pro_img" src="/img/user/${item.i_user }/${item.profile_img}" >
+								</c:when>
+								<c:otherwise>
+									<img class="pro_img" src="/img/default_profile.jpg">
+								</c:otherwise>
+							</c:choose>
+							${item.nm}
+						</td>
+						<td>${item.r_dt}</td>
+						<td>
+        					<c:if test="${item.i_user == loginUser.i_user}">
+        						<button onclick="clkCmtDel(${item.i_cmt})" class="sub_btn">삭제</button>
+        						<button onclick="clkCmtMod(${item.i_cmt}, '${item.cmt}')">수정</button>
+        					</c:if>
+        				</td>
+					</tr>
+				</c:forEach>
+			</table>
+		</div>
+	</div>
+	<script>
+		
+		
+	
+		function clkCmtDel(i_cmt)
+		{
+			if(confirm('삭제 하시겠습니까?'))
+			{
+				location.href = '/board/cmt?i_board=${data.i_board}&i_cmt=' + i_cmt
+			}
+		}
+	
+		function clkCmtCancel() 
+		{
+			cmtFrm.i_cmt.value = 0
+			cmtFrm.cmt.value = ''  
+			cmtSubmit.value = '전송'
+		}
+	
+		function clkCmtMod(i_cmt, cmt) 
+		{
+			console.log('i_cmt : ' + i_cmt)
+			
+			cmtFrm.i_cmt.value = i_cmt
+			cmtFrm.cmt.value = cmt
+			
+			cmtSubmit.value = '수정'
+		}
+		
+		function submitDel()
+		{
+			confirm('삭제하시겠습니까?')
+			{
+				delFrm.submit();
+			}
+		}
+		
+		function toggleLike(yn_like)
+		{
+			location.href='/board/toggleLike?i_board=${data.i_board}&yn_like=' + yn_like
+		}
+		
+		function doHighlight() {
+        	var searchText = '${param.searchText}'
+        	var searchType = '${param.searchType}'
+        	
+        	if(searchText == '') {        	
+        		return
+        	}
+        	
+        	switch(searchType) {
+        	case 'a': //제목
+        		var txt = elTitle.innerText
+        		txt = txt.replace(new RegExp('${searchText}'), '<span class="highlight">' + searchText + '</span>')
+        		elTitle.innerHTML = txt
+        		break
+        	case 'b': //내용
+        		var txt = elCont.innerText
+        		txt = txt.replace(new RegExp('${searchText}'), '<span class="highlight">' + searchText + '</span>')
+        		elCont.innerHTML = txt
+        		
+        		break
+        	case 'c': //제목+내용
+        		var txt = elTitle.innerText
+        		txt = txt.replace(new RegExp('${searchText}'), '<span class="highlight">' + searchText + '</span>')
+        		elTitle.innerHTML = txt
+        		
+        		txt = elCont.innerText
+        		txt = txt.replace(new RegExp('${searchText}'), '<span class="highlight">' + searchText + '</span>')
+        		elCont.innerHTML = txt
+        		break
+        	}
+        }
+        
+        doHighlight()
+	</script>
+</body>
+</html>

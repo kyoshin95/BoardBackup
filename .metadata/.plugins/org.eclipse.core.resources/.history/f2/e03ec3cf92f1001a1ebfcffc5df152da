@@ -1,0 +1,40 @@
+package com.koreait.matzip.user;
+
+import com.koreait.matzip.SecurityUtils;
+import com.koreait.matzip.db.UserDAO;
+import com.koreait.matzip.vo.UserVO;
+
+public class UserService // 로직담당
+{
+	private UserDAO dao;
+	
+	public UserService()
+	{
+		dao = new UserDAO();
+	}
+	
+	public int join(UserVO param)
+	{
+		String pw = param.getUser_pw();
+		String salt = SecurityUtils.generateSalt(); // 솔트값 만들기
+		String encryptPw = SecurityUtils.getEncrypt(pw, salt); // 솔트값을 이용하여 암호화
+		
+		param.setUser_pw(encryptPw); // 암호화된 패스워드
+		param.setSalt(salt); // 만들어진 솔트값
+		
+		return dao.Join(param);
+	}
+	
+	public int login(UserVO param)
+	{
+		int result = 0;
+		
+		UserVO dbResult = dao.selUser(param);
+		
+		int i_user = param.getI_user();
+		String user_id = param.getUser_id();
+		String user_pw = param.getUser_pw();
+		
+		return i_user;
+	}
+}

@@ -1,0 +1,36 @@
+package com.koreait.matzip;
+
+import javax.servlet.http.HttpServletRequest;
+
+import com.koreait.mapzip.user.UserController;
+
+public class HandlerMapper 
+{
+	private UserController user;
+	
+	public HandlerMapper()
+	{
+		user = new UserController();
+	}
+	
+	public String nav(HttpServletRequest request)
+	{
+		String[] uriArr = request.getRequestURI().split("/");
+		
+		if(uriArr.length < 2)
+		{
+			return null;
+		}
+		
+		switch(uriArr[1]) // 컨트롤러가
+		{
+			case ViewRef.URI_USER: // user일때
+				
+			switch(uriArr[2])
+			{
+				case "login" : return user.login(request);
+			}
+		}
+		return null;
+	}
+}

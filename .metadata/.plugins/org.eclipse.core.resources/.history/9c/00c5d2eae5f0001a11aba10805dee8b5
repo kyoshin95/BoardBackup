@@ -1,0 +1,13 @@
+package com.koreait.matzip.vo;
+
+public class UserVO 
+{
+	private int i_user;
+	private String user_id;
+	private String user_pw;
+	private String nm;
+	private String profile_img;
+	private String r_dt;
+	private String m_dt;
+
+}

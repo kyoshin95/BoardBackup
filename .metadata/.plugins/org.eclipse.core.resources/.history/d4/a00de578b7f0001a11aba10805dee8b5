@@ -1,0 +1,9 @@
+package com.koreait.mapzip.user;
+
+public class UserController 
+{
+	public String login(HttpServletRequest request, HttpServletResponse response)
+	{
+		
+	}
+}

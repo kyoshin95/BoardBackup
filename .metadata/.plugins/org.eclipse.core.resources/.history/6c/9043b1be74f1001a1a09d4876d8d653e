@@ -1,0 +1,12 @@
+package com.koreait.matzip.db;
+
+public class UserDAO 
+{
+	public int Join(UserVO param)
+	{
+		int result = 0;
+		
+		return result;
+	}
+
+}
